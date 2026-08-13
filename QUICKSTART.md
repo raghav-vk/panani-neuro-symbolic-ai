@@ -120,12 +120,13 @@ no reviewer, and incomplete source and example coverage.
 
 Read in this order:
 
-1. docs/ALL_SANDHI_DATASET.md
-2. docs/EXPERIMENT_PROTOCOL.md
-3. docs/RULE_AUTHORING_GUIDE.md
-4. docs/panini-neuro-symbolic-ai.md
-5. datasets/README.md
-6. docs/approach-to-solution.md
+1. docs/README.md
+2. docs/ALL_SANDHI_DATASET.md
+3. docs/EXPERIMENT_PROTOCOL.md
+4. docs/RULE_AUTHORING_GUIDE.md
+5. docs/panini-neuro-symbolic-ai.md
+6. datasets/README.md
+7. docs/approach-to-solution.md
 
 ## 9. Current Next Step
 

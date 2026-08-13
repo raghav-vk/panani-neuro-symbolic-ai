@@ -142,6 +142,7 @@ history and is excluded from the proposed paper.
 
 ## Documentation
 
+- docs/README.md: canonical documentation map and scope boundary.
 - docs/panini-neuro-symbolic-ai.md: working research paper.
 - docs/ALL_SANDHI_DATASET.md: broad source selection, reproduction, expert
   operationalization, and tests.
@@ -151,8 +152,8 @@ history and is excluded from the proposed paper.
 - datasets/README.md: corpus, derived-example, and split requirements.
 - COMPILE_AND_TEST.md: test layers and expected outcomes.
 
-The older broad architecture documents are retained as historical design notes
-and are explicitly superseded for the first paper.
+Retired broad architecture and issue-roadmap documents remain available in Git
+history rather than beside the active research specification.
 
 ## Collaboration
 

@@ -58,9 +58,9 @@ mixed, and manifest files.
 
 Input records require example_id, left_lemma, right_lemma, and rule_id.
 
-## Historical Scripts
+## Legacy Toy Script
 
-generate_toy_dataset.py and generate_dhatupatha_dataset.py belong to the
-original broad language-model proposal. Their output is excluded from the
-external vowel-sandhi paper unless independently redesigned, reviewed, and
-added to the frozen protocol.
+`generate_toy_dataset.py` belongs to the original broad language-model
+proposal. Its output is retained only as project history and is excluded from
+the sandhi experiment. Do not use it for training, evaluation, or publication
+claims.
