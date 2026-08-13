@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "name": "DCS_pick archive from A Dataset for Sanskrit Word Segmentation",
+  "verified_on": "2026-08-12",
+  "source": {
+    "record_url": "https://zenodo.org/records/803508",
+    "record_revision": 10,
+    "record_modified": "2024-08-03T10:23:09.445054+00:00",
+    "doi": "10.5281/zenodo.803508",
+    "publication_date": "2017-06-07",
+    "title": "A Dataset for Sanskrit Word Segmentation",
+    "creators": [
+      "Amrith Krishna",
+      "Pavankumar Satuluri",
+      "Pawan Goyal"
+    ]
+  },
+  "artifact": {
+    "zenodo_filename": "DCS_pick.zip",
+    "download_url": "https://zenodo.org/api/records/803508/files/DCS_pick.zip/content",
+    "local_file": "datasets/DCS_pick.zip",
+    "size_bytes": 199818951,
+    "zenodo_md5": "556395ddc0f087fbf0a199a0581775d0",
+    "local_md5": "556395ddc0f087fbf0a199a0581775d0",
+    "local_sha256": "7b13cc2fda84318cba23d9c7667cd3ea30600091e446dac43fae86ebe90e4e85",
+    "matches_zenodo_artifact": true
+  },
+  "license": {
+    "spdx": "CC-BY-4.0",
+    "name": "Creative Commons Attribution 4.0 International",
+    "url": "https://creativecommons.org/licenses/by/4.0/",
+    "redistribution_allowed": true,
+    "conditions": "Attribute the creators, link the license, and indicate changes."
+  },
+  "citation": "Krishna, Amrith; Satuluri, Pavankumar; Goyal, Pawan (2017). A Dataset for Sanskrit Word Segmentation. Zenodo. https://doi.org/10.5281/zenodo.803508",
+  "notes": "The manifest verifies archive identity and licensing. It does not establish that legacy pickle records are safe to execute or already constitute sandhi boundary examples."
+}

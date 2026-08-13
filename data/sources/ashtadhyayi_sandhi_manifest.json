@@ -1,0 +1,82 @@
+{
+  "artifact": {
+    "media_type": "application/x-ndjson",
+    "path": "data/sources/ashtadhyayi_sandhi_sutras.jsonl",
+    "sha256": "6160267d448a6ab589e00f9582ee87ea3bc47fd42fafb37fa9b3a9dfe0f2ebab"
+  },
+  "counts": {
+    "by_laghu_siddhanta_kaumudi_chapter": {
+      "0": 37,
+      "1": 2,
+      "13": 1,
+      "2": 47,
+      "3": 41,
+      "34": 1,
+      "4": 12,
+      "41": 3,
+      "44": 1,
+      "5": 3
+    },
+    "by_role": {
+      "definition": 19,
+      "governing_scope": 5,
+      "interpretive_principle": 11,
+      "operative_candidate": 108,
+      "transference_principle": 5
+    },
+    "by_siddhanta_kaumudi_chapter": {
+      "1": 9,
+      "2": 8,
+      "3": 43,
+      "4": 21,
+      "5": 39,
+      "6": 12,
+      "7": 16
+    },
+    "by_source_type_code": {
+      "AD": 5,
+      "AT": 5,
+      "P": 11,
+      "S": 19,
+      "V": 108
+    },
+    "operative_candidates": 108,
+    "records": 148,
+    "supporting_records": 40
+  },
+  "dataset_name": "Ashtadhyayi all-sandhi sutra candidate corpus",
+  "dataset_version": "0.1.0",
+  "license": {
+    "checked_on": "2026-08-12",
+    "claim_evidence": "supplied by project author",
+    "claimed_spdx": "Apache-2.0",
+    "github_license_api_status": 404,
+    "note": "The pinned repository snapshot contains no LICENSE, NOTICE, or COPYING file. Confirm the grant with the upstream owner before redistributing modern annotations. This artifact omits modern commentary and translations.",
+    "redistribution_status": "review_required",
+    "repository_license_file_found": false,
+    "verified_at_source_commit": false
+  },
+  "schema_version": 1,
+  "selection": {
+    "criterion": "sandhi-chapter-union-v1",
+    "description": "Union of records assigned to Siddhanta Kaumudi chapters 3-7 or Laghu Siddhanta Kaumudi chapters 2-3 by the source dataset.",
+    "laghu_siddhanta_kaumudi_chapters": [
+      "2",
+      "3"
+    ],
+    "scope_limit": "Chapter membership supplies source candidates, not a claim that each record is an executable rule or that the selection is an expert-certified exhaustive inventory.",
+    "siddhanta_kaumudi_chapters": [
+      "3",
+      "4",
+      "5",
+      "6",
+      "7"
+    ]
+  },
+  "source": {
+    "commit": "51bff9fb38c6f571b4a2bc8499d97576f00ffcce",
+    "file_sha256": "6a22591f418cd924ba4bd621944de2359cc06721b5ada79ef08d70f17a07bcc6",
+    "path": "sutraani/data.txt",
+    "repository": "https://github.com/ashtadhyayi-com/data"
+  }
+}

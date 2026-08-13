@@ -1,87 +1,66 @@
-# Scripts Directory
+# Experiment Utilities
 
-This directory contains utility scripts for the Paninian Engine project.
+## build_sandhi_sutra_corpus.py
 
-## generate_toy_dataset.py
+Builds the deterministic all-sandhi source-candidate corpus from a pinned
+checkout of `ashtadhyayi-com/data`:
 
-Generates a toy dataset of 50+ English-to-Sanskrit sentence pairs with complete grammatical breakdowns for the Proof of Concept (POC) training experiment.
+    PYTHONDONTWRITEBYTECODE=1 python3 \
+      scripts/build_sandhi_sutra_corpus.py \
+      --source-dir vendor/ashtadhyayi-data
 
-### Usage
+The default expected commit is
+`51bff9fb38c6f571b4a2bc8499d97576f00ffcce`. The builder selects the union of
+the configured Siddhānta Kaumudī and Laghu Siddhānta Kaumudī sandhi chapters,
+validates IDs and source types, emits canonical JSONL, and records its SHA-256
+and counts in a manifest.
 
-```bash
-python3 scripts/generate_toy_dataset.py
-```
+The output is a scholarly review queue, not 148 automatically executable
+rules. See `docs/ALL_SANDHI_DATASET.md`.
 
-### Output
+## validate_rules.py
 
-Creates `datasets/toy_dataset.jsonl` with training examples in the following format:
+Validates the typed JSONL rule inventory.
 
-```json
-{
-  "id": 1,
-  "instruction": "Translate this English sentence to Sanskrit using correct case endings (Vibhakti) according to Panini's rules.",
-  "input": "The boy reads the book",
-  "output": "Baalah pustakam pathati",
-  "output_devanagari": "[Devanagari: Baalah pustakam pathati]",
-  "karaka": {
-    "karta": {
-      "word": "boy",
-      "sanskrit": "Baalah",
-      "case": "nominative",
-      "vibhakti": "prathama"
-    },
-    "karma": {
-      "word": "book",
-      "sanskrit": "pustakam",
-      "case": "accusative",
-      "vibhakti": "dvitiya"
-    },
-    "kriya": {
-      "word": "reads",
-      "root": "√path",
-      "tense": "present",
-      "person": 3,
-      "number": "singular"
-    }
-  },
-  "grammar_notes": "Karta (Agent): 'boy' → Baalah (nominative case, prathama); Karma (Object): 'book' → pustakam (accusative case, dvitiya); Kriya (Verb): 'reads' → √path → present, 3rd person, singular",
-  "stage": "karaka",
-  "complexity": "medium"
-}
-```
+Draft structure:
 
-### Features
+    python3 scripts/validate_rules.py
 
-- **53 sentence pairs** covering various grammatical structures
-- **Complete Karaka breakdown**: Karta, Karma, Karana, Sampradana, Apadana, Adhikarana
-- **Grammar notes**: Detailed explanations of case endings and verb forms
-- **Complexity levels**: Simple, medium, and complex sentences
-- **Stage 2 format**: Ready for Karaka (Syntax & Translation) training
+Publication gate:
 
-### Sentence Types Included
+    python3 scripts/validate_rules.py \
+      --expected-count 25 \
+      --publication-ready
 
-1. **Simple Subject-Verb**: "The boy reads"
-2. **Subject-Verb-Object**: "The boy reads the book"
-3. **With Location (Adhikarana)**: "The sun rises in the east"
-4. **With Recipient (Sampradana)**: "The boy gives a book to the teacher"
-5. **With Source (Apadana)**: "The student comes from the school"
-6. **With Instrument (Karana)**: "The king rules with justice"
-7. **Plural subjects**: "The students read books"
+## audit_dcs_archive.py
 
-### Next Steps
+Verifies the ZIP against the frozen source manifest, compares ZIP and extracted
+pickle records, and samples pickle opcodes without instantiating serialized
+objects.
 
-After generating the dataset:
+    python3 scripts/audit_dcs_archive.py --sample 100
 
-1. **Review the dataset**:
-   ```bash
-   cat datasets/toy_dataset.jsonl | jq .
-   ```
+This command checks local integrity only. Provenance and licensing for the
+exact archive are recorded separately in `datasets/dcs_source_manifest.json`;
+neither artifact verifies annotation correctness.
 
-2. **Use for training**: This dataset is ready for Stage 2 (Karaka) training experiments
+Use `--skip-manifest-check` only for an explicitly documented diagnostic of a
+different archive; it is not valid for a frozen experiment.
 
-3. **Validate grammar**: Check that all case endings follow Panini's rules
+## build_lexical_holdout.py
 
----
+Partitions normalized lemmas before examples and writes train, dev, test,
+mixed, and manifest files.
 
-*Scripts Directory - Project Panini*  
-*Last Updated: January 16, 2026*
+    python3 scripts/build_lexical_holdout.py \
+      input-examples.jsonl \
+      output-directory
+
+Input records require example_id, left_lemma, right_lemma, and rule_id.
+
+## Historical Scripts
+
+generate_toy_dataset.py and generate_dhatupatha_dataset.py belong to the
+original broad language-model proposal. Their output is excluded from the
+external vowel-sandhi paper unless independently redesigned, reviewed, and
+added to the frozen protocol.

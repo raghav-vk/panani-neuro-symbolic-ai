@@ -1,0 +1,8 @@
+{"example_id":"smoke-train-1","left_lemma":"lemma-1","right_lemma":"lemma-2","rule_id":"EVS-001","surface":"train-surface-1"}
+{"example_id":"smoke-train-2","left_lemma":"lemma-4","right_lemma":"lemma-5","rule_id":"EVS-001","surface":"train-surface-2"}
+{"example_id":"smoke-dev-1","left_lemma":"lemma-0","right_lemma":"lemma-9","rule_id":"EVS-001","surface":"dev-surface-1"}
+{"example_id":"smoke-dev-2","left_lemma":"lemma-14","right_lemma":"lemma-15","rule_id":"EVS-001","surface":"dev-surface-2"}
+{"example_id":"smoke-test-1","left_lemma":"lemma-3","right_lemma":"lemma-10","rule_id":"EVS-001","surface":"test-surface-1"}
+{"example_id":"smoke-test-2","left_lemma":"lemma-11","right_lemma":"lemma-19","rule_id":"EVS-001","surface":"test-surface-2"}
+{"example_id":"smoke-mixed-1","left_lemma":"lemma-1","right_lemma":"lemma-0","rule_id":"EVS-001","surface":"mixed-surface-1"}
+{"example_id":"smoke-mixed-2","left_lemma":"lemma-9","right_lemma":"lemma-3","rule_id":"EVS-001","surface":"mixed-surface-2"}

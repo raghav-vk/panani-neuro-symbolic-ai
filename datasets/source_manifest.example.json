@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "name": "DCS_pick legacy archive",
+  "local_file": "datasets/DCS_pick.zip",
+  "download_url": "TODO",
+  "downloaded_at": "TODO",
+  "sha256": "TODO",
+  "license": "TO_VERIFY",
+  "citation": "TO_VERIFY",
+  "redistribution_allowed": false,
+  "notes": "Complete this from the exact download page before using the corpus in publishable experiments. Do not infer provenance from the filename."
+}

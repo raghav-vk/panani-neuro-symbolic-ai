@@ -1,20 +1,3 @@
-# Core AI
-torch>=2.1.0
-transformers>=4.38.0
-accelerate
-bitsandbytes
-peft
-unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git
-
-# Sanskrit Processing
-vidyut  # Rust bindings if available, otherwise remove
-cltk>=1.3.0 # Classical Language Toolkit
-
-# Data Handling
-pandas
-datasets
-jsonlines
-
-# Testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
+# Core development and verification
+pytest>=7.4,<10
+pytest-cov>=4.1,<8

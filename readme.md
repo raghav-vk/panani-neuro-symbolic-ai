@@ -1,128 +1,185 @@
-# Project Panini: Neuro-Symbolic Sanskrit SLM 🕉️
+# Project Pāṇini: A Focused Neuro-Symbolic Sandhi Experiment
 
-![Status](https://img.shields.io/badge/Status-Pre--Alpha-orange) ![License](https://img.shields.io/badge/License-MIT-blue) ![GPU](https://img.shields.io/badge/Compute-Consumer_GPU-green)
+This repository is developing a small, reproducible neuro-symbolic research
+system for Sanskrit sandhi. The source layer now covers candidate sūtras across
+vowel, consonant, visarga, nasal/anusvāra, non-application, and supporting
+material. The first executable benchmark remains **external vowel-sandhi
+splitting** until the broader inventory receives expert operational review.
 
-**Panini-1** is an open-source initiative to build the **Paninian Engine**—a Neuro-Symbolic system that constructs Sanskrit according to strict Paninian rules rather than just predicting the next word.
+The project no longer claims to build a complete Sanskrit language model,
+English-to-Sanskrit translator, or universally correct grammar engine in its
+first paper.
 
-Unlike standard LLMs that require millions of dollars to "guess" grammar from massive datasets, we use a **Neuro-Symbolic** approach. The Paninian Engine operates as:
+## Status
 
-- **Translator** for English inputs → Perfect Sanskrit output (Path A: Constructor)
-- **Validator** for Sanskrit inputs → Grammar correction and validation (Path B: Auditor)
+**Working experiment, not publication-ready.**
 
-We teach the model the deterministic rules of Panini's *Ashtadhyayi* (c. 500 BCE) through curriculum learning, allowing us to achieve high accuracy on minimal hardware (consumer gaming GPUs).
+Implemented:
 
----
+- Strictly validated JSONL contract for typed sandhi rules.
+- One illustrative draft rule with executable positive-example checking.
+- Proof traces for boundary rewrites.
+- Deterministic strict lexical splitting with zero lemma overlap.
+- Non-executing audit of the legacy DCS pickle archive.
+- Verified DCS archive provenance, CC BY 4.0 license, and checksums.
+- Reproducible 148-record all-sandhi sūtra candidate corpus, including 108
+  operative candidates and 40 supporting records.
+- Research protocol, authoring guide, and expanded working manuscript.
+- Automated test suite for rules, splits, archive safety, and source-corpus
+  reproducibility.
 
-## 🏗️ Architecture
+Still required:
 
-The **Paninian Engine** uses a dual-path Neuro-Symbolic architecture that constructs Sanskrit according to strict Paninian rules rather than just predicting the next word.
+- Author and independently review the complete 25-rule inventory.
+- Obtain authoritative confirmation of the ashtadhyayi-com data license.
+- Expert-screen and operationalize the broader all-sandhi source candidates.
+- Convert sentence analyses into reviewed boundary examples.
+- Implement precedence-aware candidate enumeration.
+- Implement and train baselines and the tiny ranker.
+- Run all holdouts, ablations, resource measurements, and expert evaluation.
+- Replace every TBD in the manuscript from saved experiment artifacts.
 
-```mermaid
-flowchart TB
-    A[Input: English/Transliterated/Devanagari] --> B{Language Detection}
-    B -->|English/Transliterated| C[Path A: Constructor]
-    B -->|Sanskrit| D[Path B: Auditor]
-    C --> E[Intent-to-Structure Translation]
-    D --> F[Grammar Validation & Correction]
-    E --> G[Perfect Sanskrit Output]
-    F --> G
-    G --> H[Output: Transliterated/Devanagari]
-    
-    I[Data Factory] -->|Stage 1: Dhatu-Patha| J[The Trainer]
-    K[Translation Pairs] -->|Stage 2: Karaka| J
-    L[Classical Texts] -->|Stage 3: Kavya| J
-    J -->|LoRA Adapters| M[Base Model Mistral-7B]
-    M -->|Quantization| N[Inference Edge]
-```
+## Research Question
 
-### Dual-Path System
+Can a roughly one-million-parameter contextual encoder rank external
+vowel-sandhi analyses better than symbolic and frequency baselines when test
+lemmas never occur in training?
 
-- **Path A (Constructor)**: English/Transliterated Sanskrit → Perfect Sanskrit Output
-  - Intent-to-Structure translation (not statistical mapping)
-  - Extracts semantic roles (Karaka) and applies Paninian rules
-  - Example: "The boy reads" → "Baalah pathati"
+The intended division of labor is:
 
-- **Path B (Auditor)**: Sanskrit (transliterated or Devanagari) → Grammar Validation
-  - Validates and corrects Sanskrit grammar
-  - Applies Paninian rule checking
-  - Example: "Ramena gacchati" → "Ramah gacchati" (corrected)
+    observed surface and context
+                |
+                v
+    typed symbolic candidate generator
+                |
+                v
+    valid candidates plus proof traces
+                |
+                v
+    tiny contextual Transformer ranker
+                |
+                v
+    verified candidate or explicit abstention
 
-### Training Pipeline
+The word verified means compliant with the encoded and tested subset. It does
+not mean complete Sanskrit grammatical or semantic correctness.
 
-- **The Data Factory**: Generates curriculum learning data in 3 stages using Panini's algorithms (via Vidyut)
-  - Stage 1: Dhatu-Patha (Morphology) - Word formation from roots
-  - Stage 2: Karaka (Syntax & Translation) - English-to-Sanskrit translation
-  - Stage 3: Kavya (Style & Essays) - Long-form generation
+## Quick Start
 
-- **The Trainer**: Uses Unsloth and LoRA (Low-Rank Adaptation) with curriculum learning to fine-tune a Mistral-7B model on a single RTX 3090/4090.
+The current rule and data utilities use the Python standard library. Install
+pytest for tests:
 
-- **The Edge**: The final model is quantized to 4-bit (GGUF) to run on standard laptops via llama.cpp with dual-path capabilities.
+    python3 -m pip install "pytest>=7.4"
 
----
+Run the test suite:
 
-## 🎯 Goals
+    python3 -m pytest tests -q
 
-- **Minimal Compute**: Train a fluent Sanskrit model for <$500.
-- **Academic Rigor**: Combine Neural Networks (Probabilistic) with Paninian Grammar (Deterministic).
-- **Grammar Guarantee**: Construct grammatically perfect Sanskrit using Intent-to-Structure translation.
-- **Multi-Script Support**: Handle English, transliterated Sanskrit, and Devanagari inputs/outputs.
-- **Accessibility**: Run the final model on a MacBook or local PC.
+Validate draft rule structure:
 
----
+    python3 scripts/validate_rules.py
 
-## 🛠️ Tech Stack
+The publication gate is expected to fail until all 25 rules are reviewed:
 
-- **Base Model**: Mistral-7B or Llama-3-8B
-- **Fine-Tuning**: Unsloth (2x faster, 60% less memory)
-- **Sanskrit Engine**: Vidyut (Rust-based Paninian engine)
-- **Inference**: llama.cpp
+    python3 scripts/validate_rules.py \
+      --expected-count 25 \
+      --publication-ready
 
----
+Audit the local DCS archive without unpickling records:
 
-## 🚀 Getting Started
+    python3 scripts/audit_dcs_archive.py --sample 100
 
-### Prerequisites
+## Rule Authoring
 
-- Python 3.10+
-- CUDA-enabled GPU (8GB+ VRAM for inference, 24GB for training)
+Rules are stored one JSON object per line in:
 
-### Installation
+    data/rules/external_vowel_sandhi.jsonl
 
-```bash
-git clone https://github.com/your-username/panini-slm.git
-cd panini-slm
-pip install -r requirements.txt
-```
+The seed EVS-001 record is a format example, not an approved scholarly claim.
+Each final rule needs pinned sources, explicit conditions, precedence,
+positive examples, a counterexample, and independent review.
 
----
+See docs/RULE_AUTHORING_GUIDE.md for the collaborative workflow and
+data/schemas/sandhi-rule.schema.json for the formal contract.
 
-## 🤝 Contributing
+## Strict Lexical Holdout
 
-We specifically need help from Computer Science and Linguistics students for:
+An exact-pair holdout is not enough: the model may have seen both words with
+other partners. The strict split assigns each normalized lemma to exactly one
+partition before assigning examples. An example is retained only when both
+lemmas belong to the same partition; cross-partition examples go to a mixed
+audit file.
 
-- **Data Engineering**: Writing Python wrappers for Sanskrit grammar rules.
-- **Corpus Cleaning**: Parsing texts from Kalidasa and the Mahabharata.
-- **Evaluation**: Creating "Gold Standard" test sets to verify grammatical accuracy.
+Given a derived examples file:
 
-See [CONTRIBUTING.md](docs/contributing.md) for details.
+    python3 scripts/build_lexical_holdout.py \
+      data/processed/examples.jsonl \
+      data/processed/strict-lexical
 
----
+The output manifest records the input hash, seed, split counts, mixed count,
+per-rule coverage, and zero-overlap assertions.
 
-## 📚 Documentation
+## Dataset Status
 
-- [Paninian Engine Architecture](docs/PANINIAN_ENGINE_ARCHITECTURE.md) - **Dual-path architecture** (Constructor + Auditor) with multi-script support
-- [Approach to Solution](docs/approach-to-solution.md) - **Updated:** Neuro-symbolic architecture with curriculum learning
-- [Project Overview](docs/panini-neuro-symbolic-ai.md) - Detailed project description
-- [Solution Architecture](docs/SOLUTION_ARCHITECTURE.md) - Complete system architecture for consumer hardware
-- [Contributing Guide](docs/contributing.md) - How to contribute to the project
+The pinned all-sandhi source corpus contains 148 sūtra candidates selected by
+an explicit chapter-union criterion. Of these, 108 are source-labeled
+operative candidates and 40 supply definitions, scope, or interpretive
+support. They are not yet 148 executable rules. See
+docs/ALL_SANDHI_DATASET.md and the machine-readable manifest in data/sources/.
 
----
+The local DCS_pick archive contains 441,735 unique pickle data records plus
+two ancillary Python files. All data records are extracted. A 100-record
+opcode sample passed non-executing inspection.
 
-## 📄 License
+These are sentence analyses, not 441,735 ready-to-train external-sandhi
+examples. The local ZIP matches Zenodo's DCS_pick artifact by filename, size,
+and MD5; Zenodo licenses the record under CC BY 4.0. The verified record is in
+datasets/dcs_source_manifest.json. Raw corpora and generated splits are
+intentionally ignored by Git.
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+The original 53-example translation toy dataset is retained only as project
+history and is excluded from the proposed paper.
 
----
+## Documentation
 
-*Project Panini - Neuro-Symbolic AI for Sanskrit*  
-*Last Updated: January 16, 2026*
+- docs/panini-neuro-symbolic-ai.md: working research paper.
+- docs/ALL_SANDHI_DATASET.md: broad source selection, reproduction, expert
+  operationalization, and tests.
+- docs/EXPERIMENT_PROTOCOL.md: frozen-study plan and release gates.
+- docs/RULE_AUTHORING_GUIDE.md: how to author and review the 25 rules.
+- docs/approach-to-solution.md: focused system design and implementation order.
+- datasets/README.md: corpus, derived-example, and split requirements.
+- COMPILE_AND_TEST.md: test layers and expected outcomes.
+
+The older broad architecture documents are retained as historical design notes
+and are explicitly superseded for the first paper.
+
+## Collaboration
+
+The most valuable collaborators now are:
+
+- Pāṇinian grammar reviewers for rule interpretation, exceptions, and
+  precedence.
+- Sanskrit corpus annotators for boundary alignment and adjudication.
+- NLP researchers for baselines, statistical evaluation, and error analysis.
+- Engineers for the candidate lattice, tiny ranker, and reproducible runs.
+
+Engineering contributors must not mark a rule expert_reviewed without the
+named reviewer's approval.
+
+## Research Integrity
+
+- Do not report unmeasured values.
+- Do not tune on the test set.
+- Do not compare scores across incompatible datasets as direct baselines.
+- Do not directly unpickle unverified corpus files.
+- Do not call automatically generated examples attested.
+- Do not describe subset compliance as perfect Sanskrit.
+- Do not resubmit the paper while result placeholders or unresolved licenses
+  remain.
+
+## License
+
+Project code and original documentation are licensed under MIT; see LICENSE.
+Third-party data and source material retain their own licenses and must be
+documented separately; see THIRD_PARTY_NOTICES.md.

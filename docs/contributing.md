@@ -1,195 +1,142 @@
-# Contributing to Neuro Symbolic Sanskrit SLM 🤝
+# Contributing
 
-We specifically need help from Computer Science and Linguistics students for:
+The first paper has one focused task: proof-carrying external vowel-sandhi
+splitting with a typed rule subset and a tiny candidate ranker. A broader
+148-record all-sandhi source corpus supports expert-led expansion without
+silently widening the measured claim.
 
-- **Data Engineering**: Writing Python wrappers for Sanskrit grammar rules.
-- **Corpus Cleaning**: Parsing texts from Kalidasa and the Mahabharata.
-- **Evaluation**: Creating "Gold Standard" test sets to verify grammatical accuracy.
+Contributions that expand into translation, general correction, or literary
+generation should be discussed separately and must not blur the current
+experiment.
 
----
+## Start Here
 
-## Training Guide & Technical References 🧠
+    python3 -m pip install -r requirements.txt
+    ./test_quick.sh
 
-This document outlines the step-by-step process for data generation, environment setup, and fine-tuning for Project Panini.
+Then read:
 
-## Phase 1: The "Neuro-Symbolic" Data Strategy
+1. docs/ALL_SANDHI_DATASET.md
+2. docs/EXPERIMENT_PROTOCOL.md
+3. docs/RULE_AUTHORING_GUIDE.md
+4. docs/panini-neuro-symbolic-ai.md
 
-We do not rely solely on scraped web data. We manufacture "Synthetic Data" to teach the model grammar.
+## Contribution Areas
 
-### 1.1 Synthetic Generation (The Panini Engine)
+### Grammar
 
-- **Concept:** Use deterministic rules to generate correct input/output pairs.
-- **Tool:** We use [Vidyut](https://github.com/ambuda-org/vidyut) (Rust) for high-speed word derivation.
-- **Task:** Generate 100k pairs of *Sandhi* (Euphonic combination) and *Subanta* (Noun declensions).
-- **Data Format (JSONL):**
-    ```json
-    {
-      "instruction": "Apply Sandhi rules to combine these words.",
-      "input": "Deva + Alaya",
-      "output": "Devalaya"
-    }
-    ```
+- Screen all-sandhi source candidates as include, support-only, exclude, or
+  needs-discussion without editing the generated source corpus.
+- Classify reviewed candidates by family and internal/external domain.
+- Author typed EVS draft records from pinned sources.
+- Identify inherited context, exceptions, and precedence.
+- Add positive examples and informative counterexamples.
+- Review records independently.
+- Audit model proof traces and error categories.
+
+Only the named qualified reviewer may approve promotion to expert_reviewed.
+Engineering validation is not scholarly approval.
 
-### 1.2 The "Style" Corpus (Kalidasa & Beyond)
+### Data
 
-- **Source:** [GRETIL](http://gretil.sub.uni-goettingen.de/gretil.html) or [Ambuda](https://ambuda.org/).
-- **Preprocessing:**
-    * Remove verse numbers.
-    * Strip non-Devanagari metadata.
-    * Chunk text into context windows of 2048 tokens.
-
----
-
-## Phase 2: Training Environment (Minimal GPU)
-
-We use **Unsloth** because it allows us to fine-tune Llama-3/Mistral on a single GPU without crashing.
-
-### 2.1 Hardware Requirements
-
-- **Minimum:** NVIDIA GPU with 16GB VRAM (e.g., RTX 4080, Tesla T4 on Colab).
-- **Recommended:** NVIDIA RTX 3090/4090 (24GB VRAM).
-- **RAM:** 32GB System RAM.
-
-### 2.2 Setup (Colab/Local)
-
-We use the Unsloth library for optimized training.
-
-```python
-# Install Unsloth & PyTorch
-!pip install "unsloth[colab-new] @ git+https://github.com/unslothai/unsloth.git"
-!pip install --no-deps xformers "trl<0.9.0" peft accelerate bitsandbytes
-```
-
----
-
-## Phase 3: Fine-Tuning Process
-
-### 3.1 Model Configuration
-
-We load the model in 4-bit quantization to save memory.
-
-```python
-from unsloth import FastLanguageModel
-
-model, tokenizer = FastLanguageModel.from_pretrained(
-    model_name = "unsloth/mistral-7b-instruct-v0.3-bnb-4bit",
-    max_seq_length = 2048,
-    load_in_4bit = True,
-)
-```
-
-### 3.2 LoRA (Low-Rank Adaptation) Settings
-
-We update only specific modules to keep the model "smart" while teaching it Sanskrit.
-
-- **Rank (r):** 16 (Higher = more capacity to learn new info, but slower).
-- **Target Modules:** `["q_proj", "k_proj", "v_proj", "o_proj"]` (Attention mechanisms).
-- **Alpha:** 16.
-
-### 3.3 The Training Loop
-
-- **Epochs:** 1-3 (Do not overtrain; LLMs memorize quickly).
-- **Learning Rate:** 2e-4.
-- **Batch Size:** 2 (Keep small for consumer GPUs) with Gradient Accumulation = 4.
-
----
-
-## Phase 4: References & Learning Material
-
-### 📚 Essential Reading
-
-- **LoRA Paper:** [LoRA: Low-Rank Adaptation of Large Language Models](https://arxiv.org/abs/2106.09685)
-- **Unsloth Blog:** [How to make LLM fine-tuning 2x faster](https://github.com/unslothai/unsloth)
-- **Panini's Grammar:** [Ashtadhyayi Structure & Algorithms](https://en.wikipedia.org/wiki/A%E1%B9%A3%E1%B9%AD%C4%81dhy%C4%81y%C4%AB)
-- **Panini's Grammar:** [Ashtadhyayi website data](https://github.com/ashtadhyayi-com/data)
-
-### 📺 Video Tutorials (For Students)
-
-- **Andrej Karpathy - Intro to LLMs:** The best non-technical intro. ([YouTube](https://www.youtube.com/watch?v=zjkBMFhNj_g))
-- **Neuro-Symbolic AI Explained:** Why rules + neural nets is the future. ([YouTube](https://www.youtube.com/results?search_query=neuro-symbolic+AI))
-- **Fine-Tuning Mistral on Custom Data:** Step-by-step code walkthrough. ([YouTube](https://www.youtube.com/results?search_query=fine+tuning+mistral))
-
-### 🧰 Tools
-
-- **Vidyut:** High-performance Sanskrit parser. ([GitHub](https://github.com/ambuda-org/vidyut))
-- **Sanskrit Heritage Engine:** For verifying grammatical correctness. ([Website](https://sanskrit.inria.fr/))
-
----
-
-## Phase 5: Inference (Running the Model)
-
-Once trained, we export the model to GGUF format for easy distribution.
-
-```python
-# Save to GGUF
-model.save_pretrained_gguf("panini-v1", tokenizer, quantization_method = "q4_k_m")
-```
-
-Users can then load `panini-v1.gguf` into LM Studio or Ollama to chat with the model locally.
-
----
-
-## How to Contribute
-
-### Getting Started
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Commit your changes (`git commit -m 'Add some amazing feature'`)
-5. Push to the branch (`git push origin feature/amazing-feature`)
-6. Open a Pull Request
-
-### Areas Where We Need Help
-
-We are seeking contributors for the following initial phases:
-
-- **Phase 1 (Data Engineering):** Building the Python wrappers for Paninian rule engines to generate the "Golden Dataset."
-- **Phase 2 (Scraping & Cleaning):** Processing raw text files of Meghaduta and Raghuvamsha, cleaning XML tags, and formatting for tokenization.
-- **Phase 3 (Model Training):** Running initial LoRA experiments on Google Colab (Free Tier) or local GPUs.
-
-### Detailed Contribution Areas
-
-1. **Data Engineering**
-   - Write Python wrappers for Paninian rule engines
-   - Generate synthetic grammar datasets
-   - Clean and preprocess classical texts
-
-2. **Model Training**
-   - Experiment with different LoRA configurations
-   - Optimize training hyperparameters
-   - Create evaluation metrics
-
-3. **Testing & Validation**
-   - Create "Gold Standard" test sets
-   - Evaluate grammatical accuracy
-   - Test on various Sanskrit texts
-
-4. **Documentation**
-   - Improve code documentation
-   - Write tutorials and guides
-   - Translate documentation
-
----
-
-## Code Style
-
-- Follow PEP 8 for Python code
-- Use type hints where possible
-- Write docstrings for functions and classes
-- Keep functions focused and small
-
----
-
-## Questions?
-
-If you have questions about contributing, please:
-
-- Open an issue on GitHub
-- Check the existing documentation
-- Reach out to the project maintainers
-
----
-
-*Contributing Guide - Project Panini*  
-*Last Updated: January 16, 2026*
+- Recheck frozen manifests and resolve rights for any newly added source.
+- Build a safe non-executing or restricted decoder for legacy records.
+- Align source spans to external vowel boundaries.
+- Preserve original text and stable identifiers.
+- Define normalization and deduplication tests.
+- Adjudicate ambiguous automatic labels.
+
+Do not commit raw DCS files, generated splits, restricted material, or private
+reviewer information.
+
+### Engineering
+
+- Implement precedence-aware candidate inversion.
+- Add executable negative and overlap tests.
+- Build random and exact-pair split utilities.
+- Implement the tiny candidate ranker and matched baselines.
+- Save run manifests, predictions, proofs, and resource metrics.
+- Generate paper tables from artifacts.
+
+### Evaluation
+
+- Audit lexical and source leakage.
+- Implement macro and micro metrics.
+- Add bootstrap confidence intervals.
+- Analyze candidate-recall failures before neural ranking errors.
+- Design blinded expert-review forms.
+
+## Rule Pull Requests
+
+A rule change should include:
+
+- Source URL and immutable commit.
+- Verified license field.
+- Operational interpretation.
+- Required and forbidden tags.
+- Precedence rationale.
+- At least two executable positive examples.
+- At least one counterexample.
+- Tests for every overlap affected.
+- Reviewer status represented honestly.
+
+Run:
+
+    python3 scripts/validate_rules.py
+    python3 -m pytest tests/test_rules.py -q
+
+Do not set expert_reviewed merely to make the publication gate pass.
+
+## Data Pull Requests
+
+Include:
+
+- Input source and hash.
+- Transformation version.
+- Counts before and after every filter.
+- Rejection reason counts.
+- Duplicate audit.
+- Source-group audit.
+- Split manifest.
+- License and redistribution assessment.
+
+Never include test examples chosen after model errors were inspected without
+versioning the benchmark and rerunning the full protocol.
+
+## Code Standards
+
+- Support Python 3.10 or newer.
+- Prefer the standard library for rule and data validation.
+- Use type hints for public interfaces.
+- Reject malformed input rather than silently repairing it.
+- Preserve deterministic ordering and explicit seeds.
+- Add concise comments only for non-obvious logic.
+- Add tests with every behavior change.
+- Keep the legacy toy generator isolated from research artifacts.
+
+## Research Standards
+
+- No fabricated or estimated result in a results table.
+- No test-set tuning.
+- No unsupported perfect-correctness language.
+- No hidden fallback from constrained to unconstrained output.
+- No direct execution of unverified pickle payloads.
+- No cross-dataset score comparison presented as a matched baseline.
+- No archival submission with unresolved source rights or result placeholders.
+
+## Pull Request Checklist
+
+- The change stays within or explicitly updates the frozen protocol.
+- All tests pass.
+- Draft and publication validators behave as expected.
+- New generated artifacts are ignored or intentionally licensed.
+- Documentation describes limitations and validity boundaries.
+- No unrelated user files are removed.
+- Claims are supported by code, artifacts, citations, or named review.
+
+## Questions and Coordination
+
+Open a focused issue describing the artifact, decision, and acceptance test.
+For grammatical questions, include the source passage and competing
+interpretations. For experimental questions, identify which research question
+and split are affected.

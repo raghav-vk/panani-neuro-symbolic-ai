@@ -1,233 +1,209 @@
-# How to Compile and Test
+# Verification Guide
 
-## Quick Start (3 Steps)
+The project has four current verification layers: code, rule records, corpus
+integrity, and dataset splitting. Model-training tests will be added after the
+candidate compiler is implemented.
 
-### 1. Install Dependencies
+## 1. Fast Verification
 
-```bash
-cd panini-neuro-symbolic-ai
-pip install pytest pytest-cov
-```
+    ./test_quick.sh
 
-Or install all dependencies:
-```bash
-pip install -r requirements.txt
-```
+This runs:
 
-### 2. Run Quick Test Script
+1. Draft rule structural validation.
+2. The complete pytest suite.
+3. A small DCS archive audit when the local ZIP exists.
 
-```bash
-./test_quick.sh
-```
+## 2. Unit and Integration Tests
 
-This will:
-- ✓ Check Python syntax
-- ✓ Test module imports
-- ✓ Verify basic functionality
-- ✓ Run full test suite (if pytest is installed)
+Run all tests:
 
-### 3. Run Tests
+    python3 -m pytest tests -q
 
-```bash
-# Run all tests
-pytest tests/ -v
+Run without pytest cache writes:
 
-# Run with coverage
-pytest tests/ --cov=src --cov-report=term
-```
+    python3 -m pytest tests -q -p no:cacheprovider
 
----
+Run a focused group:
 
-## Detailed Instructions
+    python3 -m pytest tests/test_rules.py -q
+    python3 -m pytest tests/test_splits.py -q
+    python3 -m pytest tests/test_split_cli.py -q
+    python3 -m pytest tests/test_dcs_audit.py -q
 
-### Compile (Syntax Check)
+Current coverage includes:
 
-Python doesn't require compilation, but you can verify syntax:
+- Strict rule field validation.
+- Unknown-field rejection.
+- Required and forbidden tags.
+- Positive-example execution.
+- Proof trace contents.
+- Publication-gate rejection of drafts.
+- Deterministic lemma assignment.
+- Zero lexical overlap.
+- Mixed-edge preservation.
+- End-to-end split CLI and manifest.
+- Non-executing pickle opcode checks.
+- Legacy generator compatibility.
 
-```bash
-# Check main module
-python3 -m py_compile src/generator/sandhi_generator.py
+## 3. Rule Validation
 
-# Check test file
-python3 -m py_compile tests/test_sandhi_generator.py
+Draft structural check:
 
-# Check example script
-python3 -m py_compile examples/sandhi_example.py
-```
+    python3 scripts/validate_rules.py
 
-**Expected Output:** No output means success (Python exits silently on success).
+Expected today:
 
-### Test
+    Validated 1 rule(s)
+    Statuses: draft=1
 
-#### Option 1: Quick Test Script (Recommended)
+Release check:
 
-```bash
-./test_quick.sh
-```
+    python3 scripts/validate_rules.py \
+      --expected-count 25 \
+      --publication-ready
 
-#### Option 2: Manual Testing
+This must fail until the full independently reviewed inventory exists. A
+successful structural check must never be reported as scholarly validation.
 
-**Test Module Import:**
-```bash
-python3 -c "import sys; sys.path.insert(0, 'src'); from generator.sandhi_generator import SandhiGenerator; print('OK')"
-```
+For each new rule, tests should cover:
 
-**Test Basic Functionality:**
-```bash
-python3 -c "import sys; sys.path.insert(0, 'src'); from generator.sandhi_generator import SandhiGenerator; g = SandhiGenerator(); print(g.apply_sandhi('Deva', 'Alaya'))"
-# Expected output: Devalaya
-```
+- Two positive examples.
+- One blocked or contrasting case.
+- Non-matching left and right boundaries.
+- Missing required tag.
+- Present forbidden tag.
+- Overlap and precedence.
+- Optional alternatives when applicable.
+- Stable forward-reconstruction proof.
 
-**Run Example Script:**
-```bash
-python3 examples/sandhi_example.py
-```
+## 4. Corpus Audit
 
-#### Option 3: Full Test Suite
+Local integrity:
 
-```bash
-# Install pytest first
-pip install pytest pytest-cov
+    python3 scripts/audit_dcs_archive.py --sample 100
 
-# Run all tests
-pytest tests/ -v
+Pre-experiment sample:
 
-# Run specific test file
-pytest tests/test_sandhi_generator.py -v
+    python3 scripts/audit_dcs_archive.py --sample 1000
 
-# Run specific test
-pytest tests/test_sandhi_generator.py::TestSandhiGenerator::test_apply_sandhi_known_combination -v
+The command exits nonzero when pickle opcode inspection finds an unexpected
+constructor, extracted data records are missing, or archive size/checksums do
+not match the frozen manifest. It deliberately does not execute pickle
+records.
 
-# Run with coverage report
-pytest tests/ --cov=src --cov-report=html
-open htmlcov/index.html  # View coverage report
-```
+Verified for the exact local DCS_pick ZIP in
+`datasets/dcs_source_manifest.json`:
 
----
+- Exact source URL recorded.
+- SHA-256 recorded.
+- Citation verified.
+- License verified.
+- Redistribution decision recorded.
+- No placeholder remains in the source manifest.
 
-## Test Results
+The archive audit cannot satisfy these provenance gates by itself; the
+manifest supplies the separate source evidence. Annotation quality and safe
+boundary conversion remain open gates.
 
-### Successful Output
-
-When you run `./test_quick.sh`, you should see:
-
-```
-==========================================
-Project Panini - Quick Test Script
-==========================================
-
-1. Checking Python version...
-   Python 3.9.6
-
-2. Checking Python syntax...
-   ✓ src/generator/sandhi_generator.py - Syntax OK
-   ✓ tests/test_sandhi_generator.py - Syntax OK
-   ✓ examples/sandhi_example.py - Syntax OK
-
-3. Testing module import...
-   ✓ Module imports successfully
-
-4. Testing basic functionality...
-   ✓ Sandhi application works: Deva + Alaya = Devalaya
-
-5. Checking for pytest...
-   ✓ pytest 7.4.0
-
-6. Running tests...
-   tests/test_sandhi_generator.py::TestSandhiGenerator::test_apply_sandhi_known_combination PASSED
-   ...
-   ======================== 15 passed in 0.05s ========================
-
-==========================================
-Quick test completed!
-==========================================
-```
-
-### Pytest Output
-
-When running `pytest tests/ -v`, you should see:
-
-```
-tests/test_sandhi_generator.py::TestSandhiGenerator::test_apply_sandhi_known_combination PASSED
-tests/test_sandhi_generator.py::TestSandhiGenerator::test_apply_sandhi_multiple_known_combinations PASSED
-tests/test_sandhi_generator.py::TestSandhiGenerator::test_apply_sandhi_empty_words PASSED
-tests/test_sandhi_generator.py::TestSandhiGenerator::test_generate_training_pairs_jsonl_format PASSED
-...
-======================== 15 passed in 0.05s ========================
-```
-
----
-
-## Troubleshooting
-
-### Issue: `pytest: command not found`
-
-**Solution:**
-```bash
-pip install pytest pytest-cov
-```
-
-### Issue: `ModuleNotFoundError: No module named 'generator'`
-
-**Solution:**
-Make sure you're in the project root directory:
-```bash
-cd panini-neuro-symbolic-ai
-export PYTHONPATH="${PYTHONPATH}:$(pwd)/src"
-```
-
-### Issue: Permission denied on `test_quick.sh`
-
-**Solution:**
-```bash
-chmod +x test_quick.sh
-```
-
-### Issue: Syntax errors
-
-**Solution:**
-- Ensure Python 3.10+ is installed
-- Check file encoding (should be UTF-8)
-- Verify no hidden characters in files
-
----
-
-## Next Steps
-
-After successful compilation and testing:
-
-1. **Review test coverage**: Aim for >90%
-2. **Run example script**: `python3 examples/sandhi_example.py`
-3. **Generate dataset**: Test with larger sample sizes
-4. **Integrate with Vidyut**: Connect to Rust library for advanced rules
-
----
-
-## Quick Reference
-
-```bash
-# Quick test (all-in-one)
-./test_quick.sh
-
-# Syntax check
-python3 -m py_compile src/generator/sandhi_generator.py
-
-# Run tests
-pytest tests/ -v
-
-# Run example
-python3 examples/sandhi_example.py
-
-# Interactive test
-python3
->>> import sys; sys.path.insert(0, 'src')
->>> from generator.sandhi_generator import SandhiGenerator
->>> g = SandhiGenerator()
->>> g.apply_sandhi("Deva", "Alaya")
-'Devalaya'
-```
-
----
-
-*Compile and Test Guide - Project Panini*  
-*Last Updated: January 16, 2026*
+## 5. All-Sandhi Source Corpus
+
+Rebuild from the pinned upstream checkout:
+
+    PYTHONDONTWRITEBYTECODE=1 python3 \
+      scripts/build_sandhi_sutra_corpus.py \
+      --source-dir vendor/ashtadhyayi-data
+
+Run its focused tests:
+
+    PYTHONDONTWRITEBYTECODE=1 python3 -m pytest \
+      tests/test_sandhi_source_corpus.py -q
+
+Required outcomes are 148 unique source records, 108 operative candidates,
+40 supporting records, and artifact SHA-256
+`6160267d448a6ab589e00f9582ee87ea3bc47fd42fafb37fa9b3a9dfe0f2ebab`.
+Every record must remain `source_candidate` until expert review maps it to zero,
+one, or more computational rules.
+
+## 6. Lexical Split Smoke Test
+
+    python3 scripts/build_lexical_holdout.py \
+      tests/fixtures/holdout_examples.jsonl \
+      /tmp/panini-holdout-smoke \
+      --force
+
+    python3 -m json.tool \
+      /tmp/panini-holdout-smoke/manifest.json
+
+Required fixture outcome:
+
+- train equals 2.
+- dev equals 2.
+- test equals 2.
+- mixed equals 2.
+- Every lexical overlap equals 0.
+
+For real data, also inspect:
+
+- Per-rule train, dev, and test counts.
+- Mixed rate.
+- Unique lemma counts.
+- Input SHA-256.
+- Fixed seed.
+- Duplicate and source-group audits.
+
+Do not choose a new seed after comparing model test results.
+
+## 7. Publication Data Gates
+
+Before training:
+
+- Normalize and deduplicate before splitting.
+- Assign stable example identifiers.
+- Group all boundaries from one source sentence.
+- Freeze random, pair, and strict lexical manifests.
+- Confirm zero train/test exact duplicates.
+- Confirm zero strict train/test lemma overlap.
+- Ensure every evaluated rule has at least 20 strict test examples.
+
+Before reporting:
+
+- Preserve predictions for every seed.
+- Recompute tables from saved predictions.
+- Report candidate recall separately.
+- Report macro and micro exact match.
+- Report coverage with selective accuracy.
+- Report parameter count, time, RAM, VRAM, and latency.
+- Run paired bootstrap confidence intervals.
+
+## 8. Future Model Tests
+
+The candidate compiler and ranker are not yet implemented. Add these tests
+before their first reported run:
+
+- Gold analysis appears in generated candidates.
+- Every candidate reconstructs the surface.
+- File order cannot change precedence.
+- Optional rules retain all licensed alternatives.
+- Candidate batching does not cross example boundaries.
+- Masked padding cannot change scores.
+- Training is reproducible for a fixed seed.
+- Checkpoint reload reproduces predictions.
+- Unconstrained ablation has a matched parameter budget.
+- Abstention threshold is selected only from development predictions.
+
+## 9. Clean-Checkout Reproduction
+
+A release candidate must be tested from a fresh clone with no local corpus
+assumptions:
+
+1. Install requirements.txt.
+2. Run all tests.
+3. Reconstruct data from the documented source when permitted.
+4. Verify source and derived hashes.
+5. Recreate every split manifest.
+6. Recreate at least one baseline run.
+7. Regenerate manuscript tables from artifacts.
+
+If restricted data prevents reconstruction, document the limitation and
+provide the maximum legally redistributable audit artifacts.

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/raghav-vk/panini-neuro-symbolic-ai/data/schemas/sandhi-sutra-source.schema.json",
+  "title": "All-sandhi sutra source candidate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "record_id",
+    "sutra_id",
+    "source_record_id",
+    "text_devanagari",
+    "source_type_code",
+    "rule_role",
+    "selection",
+    "annotation_status",
+    "computational_rule_ids",
+    "expert_review_required",
+    "source"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "record_id": {
+      "type": "string",
+      "pattern": "^ASHT-SANDHI-[1-8]\\.[1-4]\\.[0-9]+$"
+    },
+    "sutra_id": {
+      "type": "string",
+      "pattern": "^[1-8]\\.[1-4]\\.[0-9]+$"
+    },
+    "source_record_id": {
+      "type": "string",
+      "pattern": "^[1-8][1-4][0-9]{3}$"
+    },
+    "text_devanagari": {"type": "string", "minLength": 1},
+    "source_type_code": {
+      "enum": ["V", "S", "AD", "P", "AT"]
+    },
+    "rule_role": {
+      "enum": [
+        "operative_candidate",
+        "definition",
+        "governing_scope",
+        "interpretive_principle",
+        "transference_principle"
+      ]
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "criterion",
+        "matched_traditions",
+        "siddhanta_kaumudi_chapter",
+        "laghu_siddhanta_kaumudi_chapter"
+      ],
+      "properties": {
+        "criterion": {"const": "sandhi-chapter-union-v1"},
+        "matched_traditions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "siddhanta_kaumudi",
+              "laghu_siddhanta_kaumudi"
+            ]
+          }
+        },
+        "siddhanta_kaumudi_chapter": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "laghu_siddhanta_kaumudi_chapter": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        }
+      }
+    },
+    "annotation_status": {"const": "source_candidate"},
+    "computational_rule_ids": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "expert_review_required": {"const": true},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "path", "url"],
+      "properties": {
+        "repository": {
+          "const": "https://github.com/ashtadhyayi-com/data"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "path": {"const": "sutraani/data.txt"},
+        "url": {"type": "string", "format": "uri"}
+      }
+    }
+  }
+}

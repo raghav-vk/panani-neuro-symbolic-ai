@@ -3,3 +3,13 @@ __pycache__/
 .pytest_cache/
 htmlcov/
 .coverage
+.DS_Store
+**/.DS_Store
+
+# Local source corpora and generated experiment artifacts
+datasets/DCS_pick.zip
+datasets/DCS_pick/
+datasets/source_manifest.json
+data/processed/
+runs/
+checkpoints/

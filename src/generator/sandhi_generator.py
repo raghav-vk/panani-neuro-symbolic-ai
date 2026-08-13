@@ -1,247 +1,182 @@
-"""
-Sandhi Generator Module
+"""Legacy toy sandhi generator.
 
-This module implements Sandhi (euphonic combination) rules for Sanskrit word generation.
-Sandhi is the process of combining two words according to phonetic rules.
-
-Based on Panini's Ashtadhyayi rules, this module generates grammatically correct
-Sanskrit word combinations for training data.
+This module is retained for compatibility with the original demonstration.
+Its hard-coded examples and fallback concatenation are not part of the
+research system. Use panini.rules for typed experiment rules.
 """
 
-from typing import List, Dict, Tuple, Optional
 import json
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 
 class SandhiGenerator:
-    """
-    Generates Sandhi combinations from Sanskrit word pairs.
-    
-    Sandhi rules handle the phonetic changes that occur when words are combined
-    in Sanskrit. This is essential for generating grammatically correct synthetic data.
-    """
-    
+    """Generate toy combinations for legacy examples and tests only."""
+
     def __init__(self):
-        """Initialize the Sandhi generator with rule mappings."""
-        # Common Sandhi rules: (final_sound, initial_sound) -> combined_form
         self.sandhi_rules = {
-            # Vowel + Vowel combinations
-            ('a', 'a'): 'ā',
-            ('a', 'i'): 'e',
-            ('a', 'u'): 'o',
-            ('a', 'e'): 'ai',
-            ('a', 'o'): 'au',
-            ('i', 'a'): 'ya',
-            ('u', 'a'): 'va',
-            ('e', 'a'): 'aya',
-            ('o', 'a'): 'ava',
-            
-            # Consonant + Vowel combinations (common cases)
-            ('ḥ', 'a'): 'a',  # Visarga before 'a'
-            ('ḥ', 'i'): 'i',  # Visarga before 'i'
-            ('ḥ', 'u'): 'u',  # Visarga before 'u'
-            ('m', 'a'): 'ma',  # Anusvara
-            ('m', 'i'): 'mi',
-            ('m', 'u'): 'mu',
-            
-            # Common word endings
-            ('a', 'alaya'): 'alaya',  # Deva + Alaya -> Devalaya
-            ('a', 'īśa'): 'eśa',      # Deva + Īśa -> Deveśa
+            ("a", "a"): "ā",
+            ("a", "i"): "e",
+            ("a", "u"): "o",
+            ("a", "e"): "ai",
+            ("a", "o"): "au",
+            ("i", "a"): "ya",
+            ("u", "a"): "va",
+            ("e", "a"): "aya",
+            ("o", "a"): "ava",
+            ("ḥ", "a"): "a",
+            ("ḥ", "i"): "i",
+            ("ḥ", "u"): "u",
+            ("m", "a"): "ma",
+            ("m", "i"): "mi",
+            ("m", "u"): "mu",
         }
-        
-        # Word pairs that combine without modification (for testing)
         self.known_combinations = {
-            ('Deva', 'Alaya'): 'Devalaya',
-            ('Rama', 'Ayana'): 'Ramanayana',
-            ('Krishna', 'Arjuna'): 'Krishnarjuna',
-            ('Ganga', 'Uttara'): 'Gangottara',
+            ("Deva", "Alaya"): "Devalaya",
+            ("Rama", "Ayana"): "Ramanayana",
+            ("Krishna", "Arjuna"): "Krishnarjuna",
+            ("Ganga", "Uttara"): "Gangottara",
         }
-    
+
     def apply_sandhi(self, word1: str, word2: str) -> str:
-        """
-        Apply Sandhi rules to combine two Sanskrit words.
-        
-        Args:
-            word1: First Sanskrit word (e.g., "Deva")
-            word2: Second Sanskrit word (e.g., "Alaya")
-            
-        Returns:
-            Combined word with Sandhi applied (e.g., "Devalaya")
-            
-        Example:
-            >>> generator = SandhiGenerator()
-            >>> generator.apply_sandhi("Deva", "Alaya")
-            'Devalaya'
-        """
+        """Combine a pair using the legacy demonstration table."""
+        if not isinstance(word1, str) or not isinstance(word2, str):
+            raise TypeError("Both words must be strings")
         if not word1 or not word2:
             raise ValueError("Both words must be non-empty")
-        
-        # Check known combinations first
-        if (word1, word2) in self.known_combinations:
-            return self.known_combinations[(word1, word2)]
-        
-        # Get the last character of word1 and first character of word2
-        last_char = word1[-1].lower()
-        first_char = word2[0].lower()
-        
-        # Check for specific Sandhi rule
-        if (last_char, first_char) in self.sandhi_rules:
-            replacement = self.sandhi_rules[(last_char, first_char)]
-            return word1[:-1] + replacement + word2[1:]
-        
-        # Check for word-ending patterns
-        word2_lower = word2.lower()
-        for pattern, replacement in self.sandhi_rules.items():
-            if isinstance(pattern[1], str) and len(pattern[1]) > 1:
-                if word2_lower.startswith(pattern[1]):
-                    return word1[:-1] + replacement + word2[len(pattern[1]):]
-        
-        # Default: simple concatenation (fallback)
-        # In a full implementation, this would apply more complex rules
-        return word1 + word2
-    
-    def generate_training_pairs(self, word_pairs: List[Tuple[str, str]], output_format: str = "jsonl") -> List[Dict]:
-        """
-        Generate training data pairs in the specified format.
-        
-        Args:
-            word_pairs: List of (word1, word2) tuples
-            output_format: Format for output ("jsonl", "dict", "alpaca")
-            
-        Returns:
-            List of training examples in the specified format
-        """
+
+        known = self.known_combinations.get((word1, word2))
+        if known is not None:
+            return known
+
+        replacement = self.sandhi_rules.get(
+            (word1[-1].lower(), word2[0].lower())
+        )
+        if replacement is None:
+            return word1 + word2
+        return word1[:-1] + replacement + word2[1:]
+
+    def generate_training_pairs(
+        self,
+        word_pairs: List[Tuple[str, str]],
+        output_format: str = "jsonl",
+    ) -> List[Dict]:
+        """Format toy pairs using the legacy API."""
         examples = []
-        
         for word1, word2 in word_pairs:
             combined = self.apply_sandhi(word1, word2)
-            
-            if output_format == "jsonl" or output_format == "alpaca":
+            if output_format in {"jsonl", "alpaca"}:
                 example = {
-                    "instruction": "Apply Sandhi rules to combine these Sanskrit words.",
+                    "instruction": (
+                        "Apply Sandhi rules to combine these Sanskrit words."
+                    ),
                     "input": f"{word1} + {word2}",
-                    "output": combined
+                    "output": combined,
                 }
             elif output_format == "chatml":
                 example = {
                     "messages": [
                         {
                             "role": "user",
-                            "content": f"Combine these Sanskrit words using Sandhi: {word1} + {word2}"
+                            "content": (
+                                "Combine these Sanskrit words using Sandhi: "
+                                f"{word1} + {word2}"
+                            ),
                         },
                         {
                             "role": "assistant",
-                            "content": combined
-                        }
+                            "content": combined,
+                        },
                     ]
                 }
-            else:  # dict format
+            else:
                 example = {
                     "word1": word1,
                     "word2": word2,
                     "combined": combined,
-                    "rules_applied": "sandhi"
+                    "rules_applied": "sandhi",
                 }
-            
             examples.append(example)
-        
         return examples
-    
-    def generate_dataset(self, num_samples: int, output_file: Optional[str] = None) -> List[Dict]:
-        """
-        Generate a dataset of Sandhi combinations.
-        
-        Args:
-            num_samples: Number of training examples to generate
-            output_file: Optional path to save JSONL file
-            
-        Returns:
-            List of training examples
-        """
-        # Generate word pairs (in a full implementation, this would use Vidyut)
+
+    def generate_dataset(
+        self,
+        num_samples: int,
+        output_file: Optional[str] = None,
+    ) -> List[Dict]:
+        """Generate a deterministic toy dataset."""
         word_pairs = self._generate_word_pairs(num_samples)
-        
-        # Apply Sandhi and create training examples
-        examples = self.generate_training_pairs(word_pairs, output_format="jsonl")
-        
-        # Save to file if specified
+        examples = self.generate_training_pairs(word_pairs)
         if output_file:
-            with open(output_file, 'w', encoding='utf-8') as f:
+            output_path = Path(output_file)
+            with output_path.open("w", encoding="utf-8") as handle:
                 for example in examples:
-                    f.write(json.dumps(example, ensure_ascii=False) + '\n')
-        
+                    handle.write(
+                        json.dumps(
+                            example,
+                            ensure_ascii=False,
+                        )
+                        + "\n"
+                    )
         return examples
-    
-    def _generate_word_pairs(self, num_samples: int) -> List[Tuple[str, str]]:
-        """
-        Generate word pairs for Sandhi combination.
-        
-        In a full implementation, this would use Vidyut to generate valid Sanskrit words.
-        For now, we use a combination of known words and patterns.
-        
-        Args:
-            num_samples: Number of pairs to generate
-            
-        Returns:
-            List of (word1, word2) tuples
-        """
-        # Base word lists (in full implementation, these would come from Dhatupatha)
-        first_words = ["Deva", "Rama", "Krishna", "Ganga", "Sita", "Lakshmana"]
-        second_words = ["Alaya", "Ayana", "Arjuna", "Uttara", "Mandira", "Kutira"]
-        
-        pairs = []
-        for i in range(num_samples):
-            # Cycle through known combinations, then generate variations
-            if i < len(self.known_combinations):
-                pairs.append(list(self.known_combinations.keys())[i])
-            else:
-                # Simple pattern generation (would be replaced with Vidyut)
-                word1 = first_words[i % len(first_words)]
-                word2 = second_words[(i // len(first_words)) % len(second_words)]
-                pairs.append((word1, word2))
-        
-        return pairs[:num_samples]
-    
-    def validate_sandhi(self, word1: str, word2: str, expected: str) -> bool:
-        """
-        Validate that Sandhi application produces the expected result.
-        
-        Args:
-            word1: First word
-            word2: Second word
-            expected: Expected combined form
-            
-        Returns:
-            True if Sandhi application matches expected result
-        """
-        result = self.apply_sandhi(word1, word2)
-        return result == expected
+
+    def _generate_word_pairs(
+        self,
+        num_samples: int,
+    ) -> List[Tuple[str, str]]:
+        """Return deterministic pairs for compatibility tests."""
+        if num_samples < 0:
+            raise ValueError("num_samples must be non-negative")
+        first_words = [
+            "Deva",
+            "Rama",
+            "Krishna",
+            "Ganga",
+            "Sita",
+            "Lakshmana",
+        ]
+        second_words = [
+            "Alaya",
+            "Ayana",
+            "Arjuna",
+            "Uttara",
+            "Mandira",
+            "Kutira",
+        ]
+        known_pairs = list(self.known_combinations)
+        pairs: List[Tuple[str, str]] = []
+        for index in range(num_samples):
+            if index < len(known_pairs):
+                pairs.append(known_pairs[index])
+                continue
+            first = first_words[index % len(first_words)]
+            second = second_words[
+                (index // len(first_words)) % len(second_words)
+            ]
+            pairs.append((first, second))
+        return pairs
+
+    def validate_sandhi(
+        self,
+        word1: str,
+        word2: str,
+        expected: str,
+    ) -> bool:
+        """Check a legacy output against an expected string."""
+        return self.apply_sandhi(word1, word2) == expected
 
 
 def main():
-    """Example usage of the SandhiGenerator."""
     generator = SandhiGenerator()
-    
-    # Test with known combinations
-    test_pairs = [
+    for word1, word2 in (
         ("Deva", "Alaya"),
         ("Rama", "Ayana"),
         ("Krishna", "Arjuna"),
-    ]
-    
-    print("Sandhi Generator - Example Outputs:")
-    print("=" * 50)
-    
-    for word1, word2 in test_pairs:
-        combined = generator.apply_sandhi(word1, word2)
-        print(f"{word1} + {word2} = {combined}")
-    
-    print("\nGenerating training dataset...")
-    examples = generator.generate_dataset(num_samples=10)
-    
-    print(f"\nGenerated {len(examples)} training examples:")
-    for i, example in enumerate(examples[:3], 1):
-        print(f"\nExample {i}:")
-        print(json.dumps(example, indent=2, ensure_ascii=False))
+    ):
+        print(
+            f"{word1} + {word2} = "
+            f"{generator.apply_sandhi(word1, word2)}"
+        )
 
 
 if __name__ == "__main__":
